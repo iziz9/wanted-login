@@ -23,7 +23,7 @@ const GlobalStyles = createGlobalStyle`
     font-size: 16px;
     position: relative;
     padding-top: 70px;
-    padding-left: 300px;
+    padding-left: 250px;
     box-sizing: border-box;
   }
   h1 {

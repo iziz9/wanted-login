@@ -1,67 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { setCookie } from "../util/cookie";
-
-const users = [
-  {
-    username: 'blue',
-    password: '1234',
-    userInfo: { name: 'blueStragglr' }
-  },
-  {
-    username: 'white',
-    password: '1234',
-    userInfo: { name: 'whiteDwarf' }
-  },
-  {
-    username: 'red',
-    password: '1234',
-    userInfo: { name: 'redGiant' }
-  },
-]
-const _secret = '1234qwer!@#$'
-
-const login = async (username, password) => {
-  const user = users.find(user => {
-    return user.username === username && user.password === password;
-  })
-  return user
-    ? { message: 'SUCCESS', token: JSON.stringify({ user: user.userInfo, secret: _secret }) }
-    : null
-}
-
-const getUserInfo = async (token) => {
-  const parsedToken = JSON.parse(token)
-  if (!parsedToken?.secret) return null
-
-  const loggedUser = users.find((user) => {
-    if (user.userInfo.name === parsedToken.user.name) {
-      return user
-    }
-  })
-  return loggedUser ? loggedUser.userInfo.name : null
-}
-
+import { UserInfo } from '../types/user'
+import { getCurrentUserInfo, getCurrentUserInfoWithToken, loginWithToken } from '../api/login'
 
 const Login = () => {
-  const [userInfo, setUserInfo] = useState({ name: '' })
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
+  const isDataFetched = useRef(false)
   const navigate = useNavigate()
 
-  const onSubmit = async (event) => {
+  const getUserInfo = useCallback(async () => {
+    const user = await getCurrentUserInfo()
+    if (user === null) return
+    setUserInfo(user)
+    isDataFetched.current = true
+  }, [])
+
+  useEffect(() => {
+    if (isDataFetched.current) return
+    getUserInfo()
+  }, []);
+  
+
+  const onSubmit = async (event:React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
-    const loginRes = await login(formData.get('username'), formData.get('password'))
-    if (!loginRes) return;
 
-    const userRes = await getUserInfo(loginRes.token)
-    if (!userRes) return;
+    const loginPayload = {
+      username: formData.get('username') as string,
+      password: formData.get('password') as string
+    }
 
-    setUserInfo(userRes)
-    alert(`${userRes}님, 반갑습니다.`)
-    setCookie('login', JSON.stringify(userInfo))
-    navigate('/')
+    const loginResult = await loginWithToken(loginPayload)
+    if (loginResult.result === 'fail') return
+
+    // 실습1
+    // const user = await getCurrentUserInfoWithToken(loginResult.access_token)
+    // if (!user) return null
+    // setUserInfo(user)
+    // alert(`${user.userInfo.name}님, 반갑습니다.`)
+    // setCookie('login', JSON.stringify(user))
+    // navigate('/')
+
+    //실습2
+    const user = await getCurrentUserInfo()
+    if (userInfo === null) return
+    setUserInfo(userInfo)
   }
 
 

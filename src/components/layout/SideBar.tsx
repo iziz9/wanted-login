@@ -32,7 +32,7 @@ const SideBar = () => {
 };
 
 const Container = styled.div`
-  width: 300px;
+  width: 250px;
   height: 100%;
   position: fixed;
   background-color: royalblue;
@@ -46,7 +46,7 @@ const Container = styled.div`
     font-size: 22px;
     font-weight: 600;
     
-    span {
+    div {
       :hover {
         color: orange;
       }
@@ -56,7 +56,7 @@ const Container = styled.div`
     .login {
       position: fixed;
       bottom: 50px;
-      left: 80px;
+      left: 60px;
     }
   
 `
